@@ -1,11 +1,13 @@
 package com.example.querydsl;
 
 import com.example.querydsl.dto.MemberDto;
+import com.example.querydsl.dto.UserDto;
 import com.example.querydsl.entity.Member;
 import com.example.querydsl.entity.QMember;
 import com.example.querydsl.entity.Team;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
@@ -515,6 +517,35 @@ public class QueryBasicTest {
 
         for (MemberDto memberDto : result) {
             System.out.println("memberDto = " + memberDto);
+        }
+    }
+
+    @Test
+    public void findDtoByContructor() {
+        List<UserDto> result = queryFactory
+                .select(Projections.constructor(UserDto.class, member.username, member.age))
+                .from(member)
+                .fetch();
+
+        for (UserDto userDto : result) {
+            System.out.println("userDto = " + userDto);
+        }
+    }
+
+    @Test
+    public void findUserDto() {
+        QMember memberSub = new QMember("memberSub");
+        List<UserDto> result = queryFactory
+                .select(
+                        Projections.fields(UserDto.class,
+                                member.username.as("name"),
+                                ExpressionUtils.as(JPAExpressions.select(memberSub.age.max()).from(memberSub), "age"))
+                )
+                .from(member)
+                .fetch();
+
+        for (UserDto userDto : result) {
+            System.out.println("userDto = " + userDto);
         }
     }
 }
