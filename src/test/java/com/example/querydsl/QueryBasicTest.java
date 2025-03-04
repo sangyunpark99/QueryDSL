@@ -662,4 +662,48 @@ public class QueryBasicTest {
             System.out.println("member1 = " + member1);
         }
     }
+
+    @Test
+    public void bulkAdd() {
+        // add : 더하기, multiply : 곱하기
+        queryFactory
+                .update(member)
+                .set(member.age, member.age.multiply(1))
+                .execute();
+    }
+
+    @Test
+    public void bulkDelete() {
+        long count = queryFactory
+                .delete(member)
+                .where(member.age.gt(18))
+                .execute();
+    }
+
+    @Test
+    public void sqlFunction() {
+        List<String> result = queryFactory
+                .select(
+                        Expressions.stringTemplate("function('replace', {0}, {1}, {2})", member.username, "member", "M")
+                )
+                .from(member)
+                .fetch();
+
+        for (String s : result) {
+            System.out.println(s);
+        }
+    }
+
+    @Test
+    public void sqlFunction2() {
+        List<String> result = queryFactory
+                .select(member.username)
+                .from(member)
+                .where(member.username.eq(Expressions.stringTemplate("function('lower',{0})", member.username))
+                ).fetch();
+
+        for (String s : result) {
+            System.out.println(s);
+        }
+    }
 }
