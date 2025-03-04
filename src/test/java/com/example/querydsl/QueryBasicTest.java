@@ -627,4 +627,39 @@ public class QueryBasicTest {
     private Predicate allEq(String usernameCond, Integer ageCond) {
         return usernameEq(usernameCond).and(ageEq(ageCond));
     }
+
+    @Test
+    public void bulkUpdate() { // bulk query
+
+        // member1 = 10 -> DB 비회원
+        // member2 = 20 -> DB 비회원
+        // member3 = 30 -> DB member3
+        // member4 = 40 -> DB member4
+
+        // 벌크 연산은 영속성 컨텍스트를 무시하고 바로 DB에 값을 바꿉니다.
+        // 따라서 영속성 컨텍스트랑 DB의 상태가 맞지 않게 됩니다.
+        long count = queryFactory
+                .update(member)
+                .set(member.username, "비회원")
+                .where(member.age.lt(28))
+                .execute();
+
+        // 1 member1 = 10 -> DB 비회원
+        // 2 member2 = 20 -> DB 비회원
+        // 3 member3 = 30 -> DB member3
+        // 4 member4 = 40 -> DB member4
+        em.clear();
+        em.flush(); // 초기화 해서 영속성 컨텍스트의 데이터와 맞춰줍니다.
+        // 영속성 컨텍스트에 데이터가 존재하는 경우, DB는 영속성 컨텍스트에 존재하는 데이터를 갈아 엎지 않는다.
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .fetch();
+
+        // 벌크 연산을 진행한 후에는 영속성 컨텍스트를 초기화해야 한다.
+
+        for (Member member1 : result) { // 이름이 변경되지 않습니다.
+            // Repeatable read 보장
+            System.out.println("member1 = " + member1);
+        }
+    }
 }
