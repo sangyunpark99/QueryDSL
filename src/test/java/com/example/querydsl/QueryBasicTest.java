@@ -609,6 +609,7 @@ public class QueryBasicTest {
         assertThat(result.size()).isEqualTo(1);
     }
 
+    // 메서드 재사용이 가능해지고, 조합도 가능해진다.
     private List<Member> searchMember2(String usernameCond, Integer ageCond) {
         return queryFactory
                 .selectFrom(member)
